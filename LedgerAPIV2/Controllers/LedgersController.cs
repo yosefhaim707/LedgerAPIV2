@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using LedgerAPIV2.Data;
 using LedgerAPIV2.Models;
+using NuGet.Versioning;
 
 namespace LedgerAPIV2.Controllers
 {
@@ -101,12 +102,24 @@ namespace LedgerAPIV2.Controllers
         }
 
         // Get the ledger users
-        [HttpGet]
-        public async Task<ActionResult> GetUserLedgers(int id)
+        [HttpGet("dudu")]
+        public List<User> GetUserLedgers(int id)
         {
-            var 
-            return;
+            Ledger ledger = _context.Ledger.Include(l => l.Users).FirstOrDefault(l => l.Id == id);
+            return ledger.Users;
         }
+
+        // POST: Adds a user to a ledger
+        [HttpPost("dudu2")]
+        public async Task<ActionResult<Ledger>> UserToLedger(int ledgerId, int userId)
+        {
+            Ledger ledger = _context.Ledger.Include(l => l.Users).FirstOrDefault(l => l.Id == ledgerId);
+            ledger.Users.Add(_context.User.Find(userId));
+            await _context.SaveChangesAsync();
+
+            return CreatedAtAction("GetLedger", new { id = ledger.Id }, ledger);
+        }
+
 
 
         private bool LedgerExists(int id)
